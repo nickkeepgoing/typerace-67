@@ -28,9 +28,17 @@ export function renderAvatar(imgEl, fallbackEl, size) {
 
 export function refreshNavAvatar() {
   const img = $('nav-avatar');
-  if (!img) return;
-  if (state.avatarUrl) { img.src = state.avatarUrl; img.classList.remove('hidden'); }
-  else img.classList.add('hidden');
+  const fb = $('nav-avatar-fallback');
+  if (!img || !fb) return;
+  if (state.avatarUrl) {
+    img.src = state.avatarUrl;
+    img.classList.remove('hidden');
+    fb.classList.add('hidden');
+  } else {
+    img.classList.add('hidden');
+    fb.textContent = (state.username || '?').charAt(0).toUpperCase();
+    fb.classList.remove('hidden');
+  }
 }
 
 // ---------- settings screen ----------

@@ -476,3 +476,48 @@ tr.slide-in { animation: slideFlash 0.6s ease; }
   text-decoration: underline; margin-top: 10px; padding: 4px;
 }
 .link-btn:hover { color: var(--cyan); }
+
+/* ---------- profile chip (avatar+name = settings button) ---------- */
+.profile-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: none; cursor: pointer;
+  border: 1px solid var(--dim); border-radius: 999px;
+  padding: 3px 12px 3px 3px;
+  min-width: 0; transition: border-color 0.2s;
+}
+.profile-chip:hover { border-color: var(--cyan); }
+.nav-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 1px solid var(--cyan);
+}
+.avatar-fallback-mini {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  font-family: var(--font-display); font-weight: 700; font-size: 0.85rem;
+  color: var(--cyan);
+}
+.avatar-fallback-mini.hidden { display: none; }
+
+/* avatars in leaderboard + global #1 card */
+.row-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  object-fit: cover; vertical-align: middle;
+  margin-right: 8px; border: 1px solid var(--dim);
+}
+.world-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  object-fit: cover; vertical-align: middle;
+  margin-right: 10px; border: 1px solid var(--yellow);
+  box-shadow: 0 0 10px rgba(255, 230, 0, 0.4);
+}
+
+/* phone: avatar only, everything compact — logout never leaves the screen */
+@media (max-width: 540px) {
+  .navbar { gap: 8px; padding: 10px 12px; }
+  .brand { font-size: 1rem; letter-spacing: 1px; }
+  .nav-username { display: none; }
+  .profile-chip { padding: 3px; border-radius: 50%; }
+  .icon-btn { padding: 5px 8px; font-size: 0.9rem; }
+  #logout-btn { padding: 8px 12px; font-size: 0.68rem; letter-spacing: 0.5px; }
+}

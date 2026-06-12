@@ -18,9 +18,11 @@
     </div>
     <div class="nav-right">
       <button id="mute-btn" class="icon-btn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
-      <img id="nav-avatar" class="nav-avatar hidden" alt="" />
-      <span id="nav-username" class="nav-username hidden"></span>
-      <button id="settings-btn" class="icon-btn hidden" title="Profile settings" aria-label="Profile settings">⚙️</button>
+      <button id="profile-chip" class="profile-chip hidden" title="Profile settings" aria-label="Profile settings">
+        <img id="nav-avatar" class="nav-avatar hidden" alt="" />
+        <span id="nav-avatar-fallback" class="nav-avatar avatar-fallback-mini hidden"></span>
+        <span id="nav-username" class="nav-username"></span>
+      </button>
       <button id="logout-btn" class="btn btn-ghost btn-small hidden">Log out</button>
     </div>
   </nav>

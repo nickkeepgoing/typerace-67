@@ -79,9 +79,8 @@ function updateMuteBtn() {
 // ---------- session / login lifecycle ----------
 export async function enterLobby() {
   document.getElementById('nav-username').textContent = state.username;
-  document.getElementById('nav-username').classList.remove('hidden');
+  document.getElementById('profile-chip').classList.remove('hidden');
   document.getElementById('logout-btn').classList.remove('hidden');
-  document.getElementById('settings-btn').classList.remove('hidden');
   refreshNavAvatar();
   document.getElementById('lobby-name').textContent = state.username.toUpperCase();
 
@@ -97,8 +96,15 @@ export async function enterLobby() {
   }).catch(() => { document.getElementById('lobby-pb').textContent = '—'; });
 
   fetchWorldBest().then(w => {
-    document.getElementById('lobby-world').textContent =
-      w ? `${w.time_ms.toLocaleString()} ms · ${w.username}` : 'Be the first!';
+    const el = document.getElementById('lobby-world');
+    el.innerHTML = '';
+    if (!w) { el.textContent = 'Be the first!'; return; }
+    if (w.avatar_url) {
+      const img = document.createElement('img');
+      img.src = w.avatar_url; img.alt = ''; img.className = 'world-avatar';
+      el.appendChild(img);
+    }
+    el.appendChild(document.createTextNode(`${w.time_ms.toLocaleString()} ms · ${w.username}`));
   }).catch(() => { document.getElementById('lobby-world').textContent = '—'; });
 }
 
@@ -107,10 +113,8 @@ export function exitToAuth() {
   state.username = null;
   state.personalBest = null;
   state.avatarUrl = null;
-  document.getElementById('nav-username').classList.add('hidden');
+  document.getElementById('profile-chip').classList.add('hidden');
   document.getElementById('logout-btn').classList.add('hidden');
-  document.getElementById('settings-btn').classList.add('hidden');
-  document.getElementById('nav-avatar').classList.add('hidden');
   showScreen('auth');
 }
 
@@ -160,7 +164,7 @@ function boot() {
   document.getElementById('result-leaderboard-btn').addEventListener('click', openLeaderboard);
   document.getElementById('board-back-btn').addEventListener('click', enterLobby);
 
-  document.getElementById('settings-btn').addEventListener('click', openSettings);
+  document.getElementById('profile-chip').addEventListener('click', openSettings);
   document.getElementById('settings-back-btn').addEventListener('click', enterLobby);
 
   initAuth();

@@ -12,7 +12,9 @@
 // Security (set up by supabase-setup.sql) protects your data.
 // ============================================================
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';          // e.g. 'https://abcdefgh.supabase.co'
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // long string starting with 'eyJ...'
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 if (SUPABASE_URL.startsWith('YOUR_')) {

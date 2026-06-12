@@ -27,8 +27,8 @@ export async function fetchPersonalBest() {
 
 export async function fetchWorldBest() {
   const { data, error } = await supabase
-    .from('scores')
-    .select('time_ms, username')
+    .from('best_scores')
+    .select('time_ms, username, avatar_url')
     .order('time_ms', { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -51,7 +51,7 @@ async function fetchTop20() {
   // best_scores = each player's single fastest run (view created in supabase-setup.sql)
   const { data, error } = await supabase
     .from('best_scores')
-    .select('user_id, username, time_ms, played_at')
+    .select('user_id, username, avatar_url, time_ms, played_at')
     .order('time_ms', { ascending: true })
     .limit(20);
   if (error) throw error;
@@ -90,7 +90,13 @@ function render(rows, { animateNew = false } = {}) {
       <td class="name-cell"></td>
       <td class="time-cell">${row.time_ms.toLocaleString()}</td>
       <td class="date-cell">${fmtDate(row.played_at)}</td>`;
-    tr.querySelector('.name-cell').textContent = row.username; // safe text insertion
+    const nameTd = tr.querySelector('.name-cell');
+    if (row.avatar_url) {
+      const im = document.createElement('img');
+      im.src = row.avatar_url; im.alt = ''; im.className = 'row-avatar';
+      nameTd.appendChild(im);
+    }
+    nameTd.appendChild(document.createTextNode(row.username)); // safe text insertion
     body.appendChild(tr);
   });
 
