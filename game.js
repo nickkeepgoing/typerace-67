@@ -30,6 +30,7 @@ export function startRound() {
   $('timer').innerHTML = '0<span class="timer-unit">ms</span>';
   $('timer').classList.remove('pulse-fast');
   $('submit-overlay').classList.add('hidden');
+  $('submit-btn').disabled = true;
 
   showScreen('game');
   requestAnimationFrame(() => input.focus()); // keyboard slides up NOW, not at GO
@@ -61,6 +62,7 @@ function go() {
   input.value = ''; // wipe any false-start keystrokes
   round.prevLen = 0;
   input.focus();
+  $('submit-btn').disabled = false;
 
   round.timerInterval = setInterval(() => {
     const ms = Math.floor(performance.now() - round.startTime);
@@ -108,10 +110,8 @@ function onInput() {
   input.classList.toggle('wrong', typed.length > 0 && !TARGET.startsWith(typed));
 }
 
-function onKeydown(e) {
-  if (e.key !== 'Enter' || !round || !round.live || round.finished) return;
-  e.preventDefault();
-
+function trySubmit() {
+  if (!round || !round.live || round.finished) return;
   const input = $('typing-input');
   if (input.value === TARGET) {
     finishRound();
@@ -120,6 +120,12 @@ function onKeydown(e) {
     input.classList.add('wrong');
     setTimeout(() => input.classList.remove('wrong'), 300);
   }
+}
+
+function onKeydown(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  trySubmit();
 }
 
 // ---------- finish + save ----------
@@ -198,9 +204,15 @@ export function initGame() {
   $('typing-input').addEventListener('keydown', onKeydown);
   $('abort-btn').addEventListener('click', abortRound);
 
+  // iOS numeric keypad has no Return key — tap this instead
+  const submitBtn = $('submit-btn');
+  // use pointerdown (fires faster than click) and keep input focus
+  submitBtn.addEventListener('pointerdown', e => { e.preventDefault(); trySubmit(); });
+
   $('typing-input').addEventListener('paste', e => {
     e.preventDefault();
     sound.error();
     toast('ห้ามวาง! พิมพ์เองสิครับ 😉');
   });
 }
+
