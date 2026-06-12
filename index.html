@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeRace 67 — Global Typing Speed Battle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ======================= NAVBAR ======================= -->
+  <nav class="navbar">
+    <div class="brand">
+      <span class="brand-type">TYPE</span><span class="brand-race">RACE</span><span class="brand-67">67</span>
+    </div>
+    <div class="nav-right">
+      <button id="mute-btn" class="icon-btn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      <img id="nav-avatar" class="nav-avatar hidden" alt="" />
+      <span id="nav-username" class="nav-username hidden"></span>
+      <button id="settings-btn" class="icon-btn hidden" title="Profile settings" aria-label="Profile settings">⚙️</button>
+      <button id="logout-btn" class="btn btn-ghost btn-small hidden">Log out</button>
+    </div>
+  </nav>
+
+  <main id="app">
+
+    <!-- ======================= LOADING ======================= -->
+    <section id="screen-loading" class="screen active">
+      <div class="loader-wrap">
+        <div class="loader-ring"></div>
+        <p class="loader-text">CONNECTING…</p>
+      </div>
+    </section>
+
+    <!-- ======================= AUTH ======================= -->
+    <section id="screen-auth" class="screen">
+      <div class="auth-card">
+        <h1 class="auth-title">TYPERACE <span class="accent-cyan">67</span></h1>
+        <p class="auth-sub">3… 2… 1… GO! พิมพ์ 67 กด Enter ให้เร็วที่สุดในโลก</p>
+
+        <div class="tabs">
+          <button id="tab-login" class="tab active">Log in</button>
+          <button id="tab-register" class="tab">Register</button>
+        </div>
+
+        <!-- LOGIN -->
+        <form id="form-login" class="auth-form" autocomplete="on">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" required placeholder="you@example.com" autocomplete="email" />
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" required placeholder="••••••••" autocomplete="current-password" />
+          <button type="submit" class="btn btn-primary" id="login-submit">Log in</button>
+          <button type="button" id="forgot-btn" class="link-btn">ลืมรหัสผ่าน?</button>
+        </form>
+
+        <!-- REGISTER -->
+        <form id="form-register" class="auth-form hidden" autocomplete="on">
+          <label for="reg-email">Email</label>
+          <input id="reg-email" type="email" required placeholder="you@example.com" autocomplete="email" />
+          <label for="reg-username">Username</label>
+          <input id="reg-username" type="text" required minlength="2" maxlength="20"
+                 pattern="[A-Za-z0-9_]+" title="2–20 chars: letters, numbers, underscore"
+                 placeholder="speed_demon" autocomplete="username" />
+          <label for="reg-password">Password</label>
+          <input id="reg-password" type="password" required minlength="6" placeholder="min 6 characters" autocomplete="new-password" />
+          <button type="submit" class="btn btn-primary" id="register-submit">Create account</button>
+        </form>
+
+        <p id="auth-message" class="auth-message" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- ======================= LOBBY ======================= -->
+    <section id="screen-lobby" class="screen">
+      <div class="lobby">
+        <h2 class="screen-title">READY, <span id="lobby-name" class="accent-cyan"></span>?</h2>
+        <div class="stat-row">
+          <div class="stat-card">
+            <span class="stat-label">Your personal best</span>
+            <span id="lobby-pb" class="stat-value">—</span>
+          </div>
+          <div class="stat-card stat-gold">
+            <span class="stat-label">🌍 Global #1</span>
+            <span id="lobby-world" class="stat-value">—</span>
+          </div>
+        </div>
+        <button id="play-btn" class="btn btn-primary btn-huge">▶ PLAY NOW</button>
+        <button id="lobby-leaderboard-btn" class="btn btn-ghost">View leaderboard</button>
+      </div>
+    </section>
+
+    <!-- ======================= GAME ======================= -->
+    <section id="screen-game" class="screen">
+      <div class="game">
+        <div id="timer" class="timer">0<span class="timer-unit">ms</span></div>
+
+        <div id="sentence-display" class="sentence target-display" aria-live="polite"></div>
+
+        <input id="typing-input" class="typing-input" type="text" inputmode="numeric"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+               placeholder="รอสัญญาณ GO! แล้วพิมพ์ 67 + Enter" />
+
+        <button id="abort-btn" class="btn btn-ghost btn-small">✕ Quit round</button>
+
+        <div id="submit-overlay" class="overlay hidden">
+          <div class="overlay-card">
+            <div class="overlay-zap">⚡ SUBMITTED!</div>
+            <div class="overlay-time">Your time: <span id="overlay-ms"></span>ms</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= RESULT ======================= -->
+    <section id="screen-result" class="screen">
+      <div class="result">
+        <p class="result-label">FINAL TIME</p>
+        <div id="result-time" class="result-time">0</div>
+        <p class="result-unit">milliseconds</p>
+        <p id="result-rank" class="result-rank"></p>
+        <p id="result-pb" class="result-pb"></p>
+        <div class="result-actions">
+          <button id="again-btn" class="btn btn-primary">▶ Play again</button>
+          <button id="result-leaderboard-btn" class="btn btn-ghost">Leaderboard</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= LEADERBOARD ======================= -->
+    <section id="screen-leaderboard" class="screen">
+      <div class="board">
+        <h2 class="screen-title">GLOBAL <span class="accent-cyan">TOP 20</span> <span id="live-dot" class="live-dot" title="Live">●</span></h2>
+        <div class="board-table-wrap">
+          <table class="board-table">
+            <thead>
+              <tr><th>Rank</th><th>Username</th><th>Time (ms)</th><th>Date</th></tr>
+            </thead>
+            <tbody id="board-body">
+              <tr><td colspan="4" class="board-empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="board-personal" class="board-personal hidden"></div>
+        <button id="board-back-btn" class="btn btn-primary">◀ Back to lobby</button>
+      </div>
+    </section>
+
+    <!-- ======================= SETTINGS ======================= -->
+    <section id="screen-settings" class="screen">
+      <div class="settings-card">
+        <h2 class="screen-title">โปรไฟล์</h2>
+        <div class="avatar-wrap">
+          <img id="settings-avatar" class="avatar-big hidden" alt="avatar" />
+          <div id="settings-avatar-fallback" class="avatar-big avatar-fallback hidden"></div>
+        </div>
+        <p id="settings-username" class="settings-username"></p>
+        <label class="btn btn-ghost avatar-pick">
+          📷 เปลี่ยนรูปโปรไฟล์
+          <input id="avatar-input" type="file" accept="image/*" hidden />
+        </label>
+        <p id="avatar-status" class="settings-status"></p>
+
+        <hr class="settings-divider" />
+
+        <h3 class="settings-subtitle">เปลี่ยนรหัสผ่าน</h3>
+        <input id="new-password" type="password" class="settings-input"
+               minlength="6" placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)" autocomplete="new-password" />
+        <button id="change-pass-btn" class="btn btn-primary">บันทึกรหัสผ่านใหม่</button>
+        <p id="pass-status" class="settings-status"></p>
+
+        <button id="settings-back-btn" class="btn btn-ghost">◀ กลับ Lobby</button>
+      </div>
+    </section>
+
+    <!-- ======================= PASSWORD RECOVERY ======================= -->
+    <section id="screen-recovery" class="screen">
+      <div class="settings-card">
+        <h2 class="screen-title">ตั้งรหัสผ่านใหม่</h2>
+        <form id="form-recovery" class="auth-form">
+          <label for="recovery-password">รหัสผ่านใหม่</label>
+          <input id="recovery-password" type="password" minlength="6" required
+                 placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" />
+          <button type="submit" class="btn btn-primary">ยืนยันรหัสใหม่</button>
+        </form>
+        <p id="recovery-status" class="settings-status"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
