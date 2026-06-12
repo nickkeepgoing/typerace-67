@@ -543,3 +543,7 @@ tr.slide-in { animation: slideFlash 0.6s ease; }
   padding: 12px 16px;
 }
 
+.target-display.go .target-num {
+  font-size: 1.3em;
+  margin: 0 6px;
+}
