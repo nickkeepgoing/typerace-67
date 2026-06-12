@@ -4,6 +4,7 @@
 
 import { supabase } from './supabase-client.js';
 import { state, enterLobby, exitToAuth } from './app.js';
+import { openSettings } from './profile.js';
 
 const $ = id => document.getElementById(id);
 
@@ -70,6 +71,7 @@ async function handleRegister(e) {
     state.user = data.user;
     state.username = username;
     await enterLobby();
+    openSettings(true); // first time here — invite them to set a profile picture
   } catch (err) {
     console.error(err);
     setMessage(friendlyAuthError(err));
@@ -107,6 +109,9 @@ async function handleLogin(e) {
       const { error: insErr } = await supabase.from('profiles').insert({ id: data.user.id, username: uname });
       if (insErr && insErr.code !== '23505') throw insErr;
       state.username = uname;
+      await enterLobby();
+      openSettings(true); // profile just created — first login, show welcome
+      return;
     }
 
     await enterLobby();
@@ -141,3 +146,4 @@ export function initAuth() {
   $('form-login').addEventListener('submit', handleLogin);
   $('form-register').addEventListener('submit', handleRegister);
 }
+

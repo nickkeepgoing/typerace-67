@@ -43,12 +43,19 @@ export function refreshNavAvatar() {
 
 // ---------- settings screen ----------
 
-export function openSettings() {
+export function openSettings(welcome = false) {
   $('settings-username').textContent = state.username;
   $('avatar-status').textContent = '';
   $('pass-status').textContent = '';
   $('new-password').value = '';
   renderAvatar($('settings-avatar'), $('settings-avatar-fallback'));
+
+  // first-time welcome mode
+  $('settings-welcome').classList.toggle('hidden', !welcome);
+  $('settings-back-btn').textContent = welcome ? '▶ เริ่มเล่นเลย!' : '◀ กลับ Lobby';
+  $('settings-back-btn').classList.toggle('btn-primary', welcome);
+  $('settings-back-btn').classList.toggle('btn-ghost', !welcome);
+
   showScreen('settings');
 }
 
@@ -170,3 +177,4 @@ export function initProfile() {
   $('forgot-btn').addEventListener('click', sendResetEmail);
   $('form-recovery').addEventListener('submit', onRecoverySubmit);
 }
+
