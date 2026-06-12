@@ -7,13 +7,15 @@ import { initAuth, logout } from './auth.js';
 import { initGame, startRound } from './game.js';
 import { initLeaderboard, openLeaderboard, closeLeaderboard, fetchWorldBest, fetchPersonalBest } from './leaderboard.js';
 import { initProfile, openSettings, refreshNavAvatar } from './profile.js';
+import { tierFor, tierBadge } from './tiers.js';
 
 // ---------- shared state ----------
 export const state = {
   user: null,        // supabase auth user
   username: null,    // from profiles
   personalBest: null, // ms or null
-  avatarUrl: null
+  avatarUrl: null,
+  worldBest: null     // { time_ms, user_id } or null
 };
 
 // ---------- screen manager ----------
@@ -69,8 +71,61 @@ export const sound = {
     if (muted) return;
     [523.25, 659.25, 783.99].forEach((f, i) =>
       setTimeout(() => beep(f, 180, { type: 'triangle', gain: 0.1 }), i * 110));
+  },
+  sad: () => {                                                 // 3-note descending womp
+    if (muted) return;
+    [392.0, 329.63, 261.63].forEach((f, i) =>
+      setTimeout(() => beep(f, 260, { type: 'triangle', gain: 0.1 }), i * 180));
   }
 };
+
+// ---------- world-record FX ----------
+export function recordFX(win) {
+  const wrap = document.createElement('div');
+  wrap.className = 'fx-overlay ' + (win ? 'fx-win' : 'fx-sad');
+  const text = win ? 'SIX SEVEN!' : 'six seven…';
+  [...text].forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.className = 'fx-ch';
+    s.style.setProperty('--i', i);
+    s.textContent = ch === ' ' ? '\u00A0' : ch;
+    wrap.appendChild(s);
+  });
+  if (!win) {
+    const cry = document.createElement('span');
+    cry.className = 'fx-ch fx-cry';
+    cry.style.setProperty('--i', text.length + 1);
+    cry.textContent = '😭';
+    wrap.appendChild(cry);
+  }
+  document.body.appendChild(wrap);
+  win ? sound.fanfare() : sound.sad();
+  setTimeout(() => wrap.classList.add('fx-out'), 2400);
+  setTimeout(() => wrap.remove(), 2900);
+}
+
+// watch every new score worldwide — cry if someone steals our crown
+let recordChannel = null;
+function startRecordWatch() {
+  if (recordChannel) return;
+  recordChannel = supabase
+    .channel('record-watch')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scores' }, payload => {
+      const row = payload.new;
+      if (!row || typeof row.time_ms !== 'number') return;
+      const wb = state.worldBest;
+      if (wb && row.time_ms >= wb.time_ms) return; // not a new world record
+      const wasMine = !!(wb && state.user && wb.user_id === state.user.id);
+      const isMine  = !!(state.user && row.user_id === state.user.id);
+      state.worldBest = { time_ms: row.time_ms, user_id: row.user_id };
+      if (wasMine && !isMine) recordFX(false); // dethroned 😭
+      // our own new record is celebrated locally in game.js
+    })
+    .subscribe();
+}
+function stopRecordWatch() {
+  if (recordChannel) { supabase.removeChannel(recordChannel); recordChannel = null; }
+}
 
 function updateMuteBtn() {
   document.getElementById('mute-btn').textContent = muted ? '🔇' : '🔊';
@@ -85,6 +140,7 @@ export async function enterLobby() {
   document.getElementById('lobby-name').textContent = state.username.toUpperCase();
 
   showScreen('lobby');
+  startRecordWatch();
 
   // load stats (non-blocking, with graceful fallback)
   document.getElementById('lobby-pb').textContent = '…';
@@ -92,10 +148,15 @@ export async function enterLobby() {
 
   fetchPersonalBest().then(pb => {
     state.personalBest = pb;
-    document.getElementById('lobby-pb').textContent = pb !== null ? `${pb.toLocaleString()} ms` : 'No runs yet';
+    const el = document.getElementById('lobby-pb');
+    el.innerHTML = '';
+    if (pb === null) { el.textContent = 'No runs yet'; return; }
+    el.appendChild(document.createTextNode(`${pb.toLocaleString()} ms`));
+    el.appendChild(tierBadge(pb));
   }).catch(() => { document.getElementById('lobby-pb').textContent = '—'; });
 
   fetchWorldBest().then(w => {
+    state.worldBest = w ? { time_ms: w.time_ms, user_id: w.user_id } : null;
     const el = document.getElementById('lobby-world');
     el.innerHTML = '';
     if (!w) { el.textContent = 'Be the first!'; return; }
@@ -109,6 +170,7 @@ export async function enterLobby() {
 }
 
 export function exitToAuth() {
+  stopRecordWatch();
   state.user = null;
   state.username = null;
   state.personalBest = null;

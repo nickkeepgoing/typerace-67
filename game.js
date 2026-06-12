@@ -5,7 +5,8 @@
 // ============================================================
 
 import { supabase } from './supabase-client.js';
-import { state, showScreen, sound, toast, enterLobby } from './app.js';
+import { state, showScreen, sound, toast, enterLobby, recordFX } from './app.js';
+import { tierBadge } from './tiers.js';
 import { fetchRank } from './leaderboard.js';
 
 const $ = id => document.getElementById(id);
@@ -165,6 +166,17 @@ async function finishRound() {
 async function showResult(timeMs, saved) {
   showScreen('result');
 
+  // tier badge for this run
+  const tierEl = $('result-tier');
+  tierEl.innerHTML = '';
+  tierEl.appendChild(tierBadge(timeMs));
+
+  // new WORLD RECORD? celebrate big
+  if (saved && (!state.worldBest || timeMs < state.worldBest.time_ms)) {
+    state.worldBest = { time_ms: timeMs, user_id: state.user.id };
+    setTimeout(() => recordFX(true), 400);
+  }
+
   // count-up animation 0 → timeMs
   const el = $('result-time');
   const dur = 900;
@@ -200,6 +212,12 @@ async function showResult(timeMs, saved) {
 
 // ---------- init ----------
 export function initGame() {
+  // iOS: numeric pad has no Return key — use the full keyboard there
+  // so the blue "go" key appears (it fires Enter). Android keeps numeric.
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS) $('typing-input').removeAttribute('inputmode');
+
   $('typing-input').addEventListener('input', onInput);
   $('typing-input').addEventListener('keydown', onKeydown);
   $('abort-btn').addEventListener('click', abortRound);
@@ -215,4 +233,3 @@ export function initGame() {
     toast('ห้ามวาง! พิมพ์เองสิครับ 😉');
   });
 }
-

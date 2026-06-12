@@ -177,4 +177,3 @@ export function initProfile() {
   $('forgot-btn').addEventListener('click', sendResetEmail);
   $('form-recovery').addEventListener('submit', onRecoverySubmit);
 }
-

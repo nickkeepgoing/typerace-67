@@ -146,4 +146,3 @@ export function initAuth() {
   $('form-login').addEventListener('submit', handleLogin);
   $('form-register').addEventListener('submit', handleRegister);
 }
-

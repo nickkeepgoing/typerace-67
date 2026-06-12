@@ -4,6 +4,7 @@
 
 import { supabase } from './supabase-client.js';
 import { state, showScreen, toast } from './app.js';
+import { tierFor } from './tiers.js';
 
 const $ = id => document.getElementById(id);
 
@@ -28,7 +29,7 @@ export async function fetchPersonalBest() {
 export async function fetchWorldBest() {
   const { data, error } = await supabase
     .from('best_scores')
-    .select('time_ms, username, avatar_url')
+    .select('time_ms, username, avatar_url, user_id')
     .order('time_ms', { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -97,6 +98,12 @@ function render(rows, { animateNew = false } = {}) {
       nameTd.appendChild(im);
     }
     nameTd.appendChild(document.createTextNode(row.username)); // safe text insertion
+    const t = tierFor(row.time_ms);
+    const tb = document.createElement('span');
+    tb.className = 'row-tier';
+    tb.title = `${t.name} · ${t.th}`;
+    tb.textContent = t.emoji;
+    nameTd.appendChild(tb);
     body.appendChild(tr);
   });
 
